@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlazeTopia Shop</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Memuat toko...</p>
+  </div>
+
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-inner">
+        <div class="nav-left">
+          <img src="img/character.png" alt="Character" class="nav-avatar" onerror="this.style.display='none'" />
+          <div>
+            <h1>BlazeTopia Shop</h1>
+            <p>Pesan role &amp; fitur</p>
+          </div>
+        </div>
+        <div class="nav-right">
+          <div id="authSection">
+            <div id="notLoggedIn">
+              <button class="btn-login" onclick="openModal('loginModal')">
+                <i class="fas fa-sign-in-alt"></i> Login
+              </button>
+              <button class="btn-register" onclick="openModal('registerModal')">
+                <i class="fas fa-user-plus"></i> Register
+              </button>
+            </div>
+            <div id="loggedIn" style="display:none; align-items: center; gap: 0.75rem;">
+              <span id="userNameDisplay" style="color: #fff; font-weight: 500; font-size: 0.9rem;"></span>
+              <button class="btn-logout" onclick="handleLogout()" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="container">
+      <div class="main-grid">
+
+        <div class="items-section">
+          <h2 class="section-title"><i class="fas fa-crown"></i> Pilih Role</h2>
+          <div class="items-grid" id="itemsGrid"></div>
+        </div>
+
+        <div class="checkout-section">
+          <div class="checkout-card">
+            <div class="checkout-header">
+              <h2><i class="fas fa-shopping-cart"></i> Pesan</h2>
+              <p>Isi data kamu</p>
+            </div>
+            <div class="checkout-body">
+
+              <div class="form-group">
+                <label for="growId">GrowID *</label>
+                <input type="text" id="growId" placeholder="GrowID kamu" />
+              </div>
+              <div class="form-group">
+                <label for="worldName">Nama World *</label>
+                <input type="text" id="worldName" placeholder="Nama World kamu" />
+              </div>
+              <div class="form-group">
+                <label for="emailUser"><i class="fas fa-envelope"></i> Email *</label>
+                <input type="email" id="emailUser" placeholder="Email kamu" />
+                <small>Untuk konfirmasi order</small>
+              </div>
+
+              <div class="selected-item" id="selectedItem" style="display:none;">
+                <div class="selected-item-info">
+                  <p id="selectedName">Nama Item</p>
+                  <p id="selectedPrice">Rp 0</p>
+                </div>
+              </div>
+
+              <div id="qrisContainer" style="display:none; text-align: center;">
+                <p style="color: #fff; font-weight: 600; margin-bottom: 0.5rem;">
+                  <i class="fas fa-qrcode"></i> Scan QRIS untuk Bayar
+                </p>
+                <img id="qrisImage" src="img/qris.png" alt="QRIS" onerror="this.style.display='none'" />
+                <div id="timer" style="color: #fbbf24; font-size: 1.2rem; font-weight: 700; margin: 0.5rem 0;"></div>
+                <div id="orderStatus" style="color: #f59e0b; font-size: 0.9rem; font-weight: 600;">⏳ Menunggu pembayaran...</div>
+
+                <div id="uploadSection" style="display:none; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                  <label style="color: #fff; font-weight: 600; display: block; margin-bottom: 0.5rem;">
+                    <i class="fas fa-image"></i> Upload Bukti Transfer
+                  </label>
+                  <input type="file" id="proofImage" accept="image/*" capture="environment" />
+                  <small style="color: rgba(255,255,255,0.4); display: block; margin-top: 0.25rem;">Upload screenshot bukti transfer</small>
+                  <div id="previewContainer" style="display:none; margin-top: 0.5rem;">
+                    <img id="imagePreview" src="#" alt="Preview" />
+                  </div>
+                  <button class="btn-upload" id="submitProofBtn" style="display:none;">
+                    <i class="fas fa-paper-plane"></i> Kirim Bukti
+                  </button>
+                </div>
+              </div>
+
+              <button class="btn-checkout" id="orderBtn">Pilih item dulu</button>
+
+              <div class="notes-card">
+                <h4><i class="fas fa-info-circle"></i> Catatan:</h4>
+                <ul>
+                  <li>• Pastikan GrowID benar</li>
+                  <li>• Upload bukti transfer setelah QRIS muncul</li>
+                  <li>• Role akan dikirim dalam 24 jam</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL LOGIN -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('loginModal')">&times;</span>
+      <div class="modal-header">
+        <i class="fas fa-sign-in-alt modal-icon"></i>
+        <h2>Selamat Datang Kembali</h2>
+        <p>Masuk ke akun kamu</p>
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-envelope"></i> Email</label>
+        <input type="email" id="loginEmail" placeholder="email@example.com" />
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" />
+      </div>
+      <button class="btn-primary" onclick="handleLogin()">Masuk</button>
+      <p class="modal-footer-text">
+        Belum punya akun? <a href="#" onclick="closeModal('loginModal'); openModal('registerModal');">Daftar Sekarang</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- MODAL REGISTER -->
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('registerModal')">&times;</span>
+      <div class="modal-header">
+        <i class="fas fa-user-plus modal-icon"></i>
+        <h2>Buat Akun</h2>
+        <p>Daftar sekarang gratis</p>
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-user"></i> Username</label>
+        <input type="text" id="registerUsername" placeholder="Pilih username" />
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-envelope"></i> Email</label>
+        <input type="email" id="registerEmail" placeholder="email@example.com" />
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="registerPassword" placeholder="Minimal 6 karakter" />
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-check-circle"></i> Konfirmasi Password</label>
+        <input type="password" id="registerConfirm" placeholder="Ulangi password" />
+      </div>
+      <button class="btn-primary" onclick="handleRegister()">Daftar</button>
+      <p class="modal-footer-text">
+        Sudah punya akun? <a href="#" onclick="closeModal('registerModal'); openModal('loginModal');">Masuk</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="supabase-config.js"></script>
+  <script src="script.js"></script>
+</body>
+  </html>
